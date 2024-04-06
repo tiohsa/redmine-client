@@ -23,6 +23,7 @@
 		"@tauri-apps/cli": "^1.5.11",
 		"@types/eslint": "^8.56.0",
 		"carbon-components-svelte": "^0.85.0",
+		"carbon-icons-svelte": "^12.6.0",
 		"carbon-preprocess-svelte": "^0.11.0",
 		"eslint": "^8.56.0",
 		"eslint-config-prettier": "^9.1.0",
@@ -37,6 +38,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@tauri-apps/api": "^1.5.3",
 		"tauri-plugin-positioner-api": "^0.2.7"
 	}
 }

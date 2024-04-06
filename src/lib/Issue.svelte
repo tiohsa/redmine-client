@@ -9,7 +9,8 @@
 		SelectItem,
 		Button,
 		Loading,
-		ToastNotification
+		ToastNotification,
+		FormGroup
 	} from 'carbon-components-svelte';
 
 	import { invoke } from '@tauri-apps/api/tauri';
@@ -33,7 +34,7 @@
 		.then((json) => {
 			config = json;
 		})
-		.catch((e) => (error = e));
+		.catch((e) => console.error(e));
 
 	async function create_issue() {
 		// POST / issues.json;

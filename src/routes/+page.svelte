@@ -1,5 +1,5 @@
 <script>
-	import Redmine from './Redmine.svelte';
+	import Redmine from '../lib/Redmine.svelte';
 </script>
 
 <svelte:head>

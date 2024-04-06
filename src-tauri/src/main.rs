@@ -3,6 +3,7 @@
 
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
+use tauri::{utils::config::AppUrl, window::WindowBuilder, WindowUrl};
 use tauri::{
     CustomMenuItem, LogicalSize, Manager, Size, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem,
@@ -122,12 +123,30 @@ fn main() {
         .add_item(hide);
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
+    // let port = portpicker::pick_unused_port().expect("failed to find unused port");
+    // let mut context = tauri::generate_context!();
+    // let url = format!("http://localhost:{}", port).parse().unwrap();
+    // let window_url = WindowUrl::External(url);
+    // // rewrite the config so the IPC is enabled on this URL
+    // context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![issue, read, save])
         .plugin(tauri_plugin_positioner::init())
+        // .plugin(tauri_plugin_localhost::Builder::new(port).build())
         .setup(|app| {
+            // WindowBuilder::new(
+            //     app,
+            //     "main".to_string(),
+            //     if cfg!(dev) {
+            //         Default::default()
+            //     } else {
+            //         window_url
+            //     },
+            // )
+            // .build()?;
             let window = app.get_window("main").unwrap();
-            window.hide().unwrap();
+            // window.hide().unwrap();
             let _ = window.move_window(Position::BottomRight);
             window
                 .set_size(Size::Logical(LogicalSize {

@@ -1,5 +1,6 @@
 <script>
 	// import './styles.css';
+	import 'carbon-components-svelte/css/all.css';
 </script>
 
 <div class="app">
