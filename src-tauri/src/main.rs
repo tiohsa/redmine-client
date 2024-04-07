@@ -3,7 +3,6 @@
 
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
-use tauri::{utils::config::AppUrl, window::WindowBuilder, WindowUrl};
 use tauri::{
     CustomMenuItem, LogicalSize, Manager, Size, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem,
@@ -15,10 +14,10 @@ struct Issue {
     project_id: String,
     subject: String,
     description: Option<String>,
-    tracker_id: i32,
-    status_id: i32,
-    priority_id: i32,
-    category_id: Option<i32>,
+    tracker_id: String,
+    status_id: String,
+    priority_id: String,
+    category_id: Option<String>,
     fixed_version_id: Option<i32>,
     assigned_to_id: Option<i32>,
     parent_issue_id: Option<i32>,
@@ -29,9 +28,15 @@ struct Issue {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+struct Issues {
+    issue: Vec<Issue>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 struct Config {
     url: String,
     token: String,
+    project_id: String,
 }
 
 // https://jonaskruckenberg.github.io/tauri-docs-wip/development/inter-process-communication.html#error-handling
@@ -60,30 +65,12 @@ impl serde::Serialize for Error {
 }
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-//$result = sendPostRequest($url, [
-//   'issue' => [
-//     'project_id' => 1,          // プロジェクト
-//     'subject'    => 'APIテスト',  // 題名
-//     // 以下は任意で指定する
-//     //'description'      => '',  // 説明文
-//     //'tracker_id'       => '',  // トラッカー
-//     //'status_id'        => '',  // ステータス
-//     //'priority_id'      => '',  // 優先度
-//     //'category_id'      => '',  // カテゴリ
-//     //'fixed_version_id' => '',  // 対象バージョン
-//     //'assigned_to_id'   => '',  // 担当者
-//     //'parent_issue_id'  => '',  // 親チケット
-//     //'custom_fields'    => '',  // カスタムフィールド
-//     //'watcher_user_ids' => '',  // ウォッチャー(ユーザーID) v2.3.0〜
-//     //'is_private'       => '',  // プライベートチケットにするか true or false
-//     //'estimated_hours'  => ''   // 予定工数
-//   ]
 #[tauri::command]
-async fn issue(json: String, config: String) -> Result<String, Error> {
+async fn issue(issue: String, config: String) -> Result<String, Error> {
     let config_json: Config = serde_json::from_str(&config)?;
-    let issue_json: serde_json::Value = serde_json::from_str(&json)?;
+    let issue_json: serde_json::Value = serde_json::from_str(&issue)?;
+    // let issues_json: Issues = serde_json::from_str(&issues)?;
 
-    println!("{}", format!("{}/issues.json", config_json.url));
     let resp = reqwest::Client::new()
         .post(format!("{}/issues.json", config_json.url))
         .header("X-Redmine-API-Key", config_json.token)
@@ -97,15 +84,15 @@ async fn issue(json: String, config: String) -> Result<String, Error> {
 const SETTING_FILE_NAME: &str = "redmine-client.json";
 
 #[tauri::command]
-fn save(json: String) -> Result<(), Error> {
+fn save_config(config: String) -> Result<(), Error> {
     let dir = tauri::api::path::config_dir().ok_or(anyhow!("Could not find config directory"))?;
     let path = dir.join(SETTING_FILE_NAME);
-    std::fs::write(path, json)?;
+    std::fs::write(path, config)?;
     Ok(())
 }
 
 #[tauri::command]
-fn read() -> Result<String, Error> {
+fn read_config() -> Result<String, Error> {
     let dir = tauri::api::path::config_dir().ok_or(anyhow!("Could not find config directory"))?;
     let path = dir.join(SETTING_FILE_NAME);
     let data = std::fs::read_to_string(path)?;
@@ -123,28 +110,10 @@ fn main() {
         .add_item(hide);
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
-    // let port = portpicker::pick_unused_port().expect("failed to find unused port");
-    // let mut context = tauri::generate_context!();
-    // let url = format!("http://localhost:{}", port).parse().unwrap();
-    // let window_url = WindowUrl::External(url);
-    // // rewrite the config so the IPC is enabled on this URL
-    // context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
-
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![issue, read, save])
+        .invoke_handler(tauri::generate_handler![issue, read_config, save_config])
         .plugin(tauri_plugin_positioner::init())
-        // .plugin(tauri_plugin_localhost::Builder::new(port).build())
         .setup(|app| {
-            // WindowBuilder::new(
-            //     app,
-            //     "main".to_string(),
-            //     if cfg!(dev) {
-            //         Default::default()
-            //     } else {
-            //         window_url
-            //     },
-            // )
-            // .build()?;
             let window = app.get_window("main").unwrap();
             // window.hide().unwrap();
             let _ = window.move_window(Position::BottomRight);
