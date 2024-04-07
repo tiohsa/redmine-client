@@ -14,6 +14,8 @@
 	import { getContext } from 'svelte';
 	import Issue from './models/issue';
 
+	export let issueCategories;
+
 	const config = getContext('config');
 
 	let result = undefined;
@@ -45,6 +47,12 @@
 		{#each issue.priorities as priority}
 			<SelectItem value={priority} text={issue.priority_names[priority - 1]} />
 		{/each}
+	</Select>
+	<Select bind:selected={issue.category_id} labelText="Category">
+		{#each issueCategories as category}
+			<SelectItem value={category.id} text={category.name} />
+		{/each}
+		<SelectItem />
 	</Select>
 	<DatePicker
 		datePickerType="range"

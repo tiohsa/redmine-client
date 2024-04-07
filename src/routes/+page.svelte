@@ -23,5 +23,5 @@
 </svelte:head>
 
 <section>
-	<Redmine />
+	<Redmine issueCategories={data.issueCategories} />
 </section>

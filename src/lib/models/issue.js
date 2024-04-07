@@ -23,7 +23,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 export default class Issue {
 
     priorities = [1, 2, 3, 4, 5];
-    priority_names = ['低め', '通常', '高め', '急いで', '今すぐ'];
+    priority_names = ['Low', 'Normal', 'Hight', 'Urgent ', 'Immediate'];
 
     constructor({
         project_id = '',
@@ -31,6 +31,7 @@ export default class Issue {
         priority_id = 2,
         status_id = 1,
         tracker_id = 2,
+        category_id = undefined,
         notes = '',
         start_date = new Date().toLocaleDateString('sv-SE'),
         due_date = new Date().toLocaleDateString('sv-SE')
@@ -40,6 +41,7 @@ export default class Issue {
         this.priority_id = priority_id;
         this.status_id = status_id;
         this.tracker_id = tracker_id;
+        this.category_id = category_id;
         this.notes = notes;
         this.start_date = start_date;
         this.due_date = due_date;
@@ -52,7 +54,7 @@ export default class Issue {
         const data = JSON.stringify(issues);
         const config = JSON.stringify(conf);
         let result =
-            invoke('issue', {
+            invoke('post_issues', {
                 issue: data,
                 config: config
             }).then((response) => {

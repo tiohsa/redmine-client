@@ -66,10 +66,9 @@ impl serde::Serialize for Error {
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-async fn issue(issue: String, config: String) -> Result<String, Error> {
+async fn post_issues(issue: String, config: String) -> Result<String, Error> {
     let config_json: Config = serde_json::from_str(&config)?;
     let issue_json: serde_json::Value = serde_json::from_str(&issue)?;
-    // let issues_json: Issues = serde_json::from_str(&issues)?;
 
     let resp = reqwest::Client::new()
         .post(format!("{}/issues.json", config_json.url))
@@ -79,6 +78,24 @@ async fn issue(issue: String, config: String) -> Result<String, Error> {
         .await?;
     println!("{}", &resp.status());
     Ok(resp.status().to_string())
+}
+
+#[tauri::command]
+async fn get_issue_categories(config: String) -> Result<String, Error> {
+    let config_json: Config = serde_json::from_str(&config)?;
+
+    let resp = reqwest::Client::new()
+        .get(format!(
+            "{}/projects/{}/issue_categories.json",
+            config_json.url, config_json.project_id
+        ))
+        .header("X-Redmine-API-Key", config_json.token)
+        .send()
+        .await?;
+    println!("{}", &resp.status());
+    let json = resp.json::<serde_json::Value>().await?;
+    println!("{}", &json.to_string());
+    Ok(json["issue_categories"].to_string())
 }
 
 const SETTING_FILE_NAME: &str = "redmine-client.json";
@@ -111,7 +128,12 @@ fn main() {
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![issue, read_config, save_config])
+        .invoke_handler(tauri::generate_handler![
+            post_issues,
+            get_issue_categories,
+            read_config,
+            save_config
+        ])
         .plugin(tauri_plugin_positioner::init())
         .setup(|app| {
             let window = app.get_window("main").unwrap();
