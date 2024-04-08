@@ -25,9 +25,10 @@ export default class Config {
     }
 
 
-    save(conf) {
+    save(config) {
+        const config_json = JSON.stringify(config)
         const result =
-            invoke('save_config', { config: JSON.stringify(conf) })
+            invoke('save_config', { config: config_json })
                 .then((_response) => {
                     return new Result(undefined, "Save Config");
                 })

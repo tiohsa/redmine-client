@@ -13,6 +13,7 @@
 	} from 'carbon-components-svelte';
 	import { getContext } from 'svelte';
 	import Issue from './models/issue';
+	import Add from 'carbon-icons-svelte/lib/Add.svelte';
 
 	export let issueCategories;
 
@@ -40,7 +41,7 @@
 		create_issue();
 	}}
 >
-	<Button type="submit">Register</Button>
+	<Button type="submit" icon={Add}>Create</Button>
 	<TextInput bind:value={issue.subject} labelText="Subject" placeholder="Subject" required />
 	<TextArea bind:value={issue.notes} labelText="Notes" placeholder="Notes" />
 	<Select bind:selected={issue.priority_id} labelText="Priority" required>

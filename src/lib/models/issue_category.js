@@ -8,11 +8,11 @@ export default class IssueCategory {
         this.name = name;
     }
 
-    getIssueCategories(conf) {
-        const config = JSON.stringify(conf);
+    getIssueCategories(config) {
+        const config_json = JSON.stringify(config);
         const result =
             invoke('get_issue_categories', {
-                config: config
+                config: config_json
             })
                 .then((response) => {
                     const json = JSON.parse(response);
