@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use anyhow::{anyhow, Result};
+use redmine_client::config::Config;
 use serde::{Deserialize, Serialize};
 use tauri::{
     CustomMenuItem, LogicalSize, Manager, Size, SystemTray, SystemTrayEvent, SystemTrayMenu,
@@ -32,12 +33,18 @@ struct Issues {
     issue: Vec<Issue>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Config {
-    url: String,
-    token: String,
-    project_id: String,
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// struct Config {
+//     url: String,
+//     token: String,
+//     project_id: String,
+// }
+
+// #[derive(Serialize, Deserialize, Debug)]
+// struct Size {
+//     width: f64,
+//     height: f64,
+// }
 
 // https://jonaskruckenberg.github.io/tauri-docs-wip/development/inter-process-communication.html#error-handling
 #[derive(Debug, thiserror::Error)]
@@ -142,6 +149,20 @@ fn read_config() -> Result<String, Error> {
     Ok(data)
 }
 
+fn save_window_size(width: u32, height: u32) -> Result<(), Error> {
+    let mut config: Config = serde_json::from_str(&read_config().unwrap()).unwrap();
+    config.window.set_width(width);
+    config.window.set_height(height);
+    let config_json: String = serde_json::to_string(&config).unwrap();
+    save_config(config_json).unwrap();
+    Ok(())
+}
+
+fn read_window_size() -> Result<redmine_client::config::Size, Error> {
+    let mut config: Config = serde_json::from_str(&read_config().unwrap()).unwrap();
+    Ok(config.window)
+}
+
 fn main() {
     // system tray
     // https://tauri.app/v1/guides/features/system-tray/
@@ -166,10 +187,11 @@ fn main() {
             let window = app.get_window("main").unwrap();
             // window.hide().unwrap();
             let _ = window.move_window(Position::BottomRight);
+            let size = read_window_size().unwrap();
             window
                 .set_size(Size::Logical(LogicalSize {
-                    width: 400.0,
-                    height: 600.0,
+                    width: size.width as f64,
+                    height: size.height as f64,
                 }))
                 .unwrap();
             // btw don't use .unwrap() here, i'm just lazy.
@@ -179,6 +201,8 @@ fn main() {
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 event.window().hide().unwrap();
+                let size = event.window().inner_size().unwrap();
+                save_window_size(size.width, size.height).unwrap();
                 api.prevent_close()
             }
             _ => {}
