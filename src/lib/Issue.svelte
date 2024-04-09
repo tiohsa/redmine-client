@@ -44,17 +44,6 @@
 	<Button type="submit" icon={Add}>Create</Button>
 	<TextInput bind:value={issue.subject} labelText="Subject" placeholder="Subject" required />
 	<TextArea bind:value={issue.notes} labelText="Notes" placeholder="Notes" />
-	<Select bind:selected={issue.priority_id} labelText="Priority" required>
-		{#each issue.priorities as priority}
-			<SelectItem value={priority} text={issue.priority_names[priority - 1]} />
-		{/each}
-	</Select>
-	<Select bind:selected={issue.category_id} labelText="Category">
-		{#each issueCategories as category}
-			<SelectItem value={category.id} text={category.name} />
-		{/each}
-		<SelectItem />
-	</Select>
 	<DatePicker
 		datePickerType="range"
 		dateFormat="Y-m-d"
@@ -74,6 +63,17 @@
 			required
 		/>
 	</DatePicker>
+	<Select bind:selected={issue.priority_id} labelText="Priority" required>
+		{#each issue.priorities as priority}
+			<SelectItem value={priority} text={issue.priority_names[priority - 1]} />
+		{/each}
+	</Select>
+	<Select bind:selected={issue.category_id} labelText="Category">
+		{#each issueCategories as category}
+			<SelectItem value={category.id} text={category.name} />
+		{/each}
+		<SelectItem />
+	</Select>
 </Form>
 {#if loading}
 	<Loading />

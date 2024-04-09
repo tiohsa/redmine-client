@@ -25,6 +25,7 @@
 			let issue = new Issue({});
 			let params = {
 				project_id: $config.project_id,
+				status_id: 'open',
 				sort: 'category:desc,du_date:asc,priority:desc'
 			};
 			const result = await issue.getIssues(params, $config);
